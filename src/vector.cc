@@ -86,6 +86,13 @@ int64_t Vector::argmax() {
   return argmax;
 }
 
+real Vector::squareNorm() {
+  real v = 0;
+  for (int64_t i = 0; i < size(); i++)
+    v += (*this)[i] * (*this)[i];
+  return v;
+}
+
 std::ostream& operator<<(std::ostream& os, const Vector& v) {
   os << std::setprecision(5);
   for (int64_t j = 0; j < v.size(); j++) {

@@ -15,6 +15,7 @@
 
 #include "utils.h"
 #include "vector.h"
+#include <iostream>
 
 namespace fasttext {
 
@@ -115,6 +116,14 @@ void DenseMatrix::addRowToVector(Vector& x, int32_t i) const {
   for (int64_t j = 0; j < this->size(1); j++) {
     x[j] += at(i, j);
   }
+}
+
+Vector DenseMatrix::getVector(int32_t i) const {
+  Vector vector = Vector(this->size(1));
+  for (int64_t j = 0; j < this->size(1); j++) {
+    vector[j] += at(i, j);
+  }
+  return vector;
 }
 
 void DenseMatrix::addRowToVector(Vector& x, int32_t i, real a) const {

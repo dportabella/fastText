@@ -54,6 +54,7 @@ class Vector {
   void addRow(const Matrix&, int64_t, real);
   void mul(const Matrix&, const Vector&);
   int64_t argmax();
+  real squareNorm();
 };
 
 std::ostream& operator<<(std::ostream&, const Vector&);

@@ -23,7 +23,8 @@ namespace fasttext {
 class Loss;
 
 class Model {
- protected:
+ //protected:
+ public:
   std::shared_ptr<Matrix> wi_;
   std::shared_ptr<Matrix> wo_;
   std::shared_ptr<Loss> loss_;

@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
+#include <iostream>
 
 namespace fasttext {
 
@@ -194,6 +195,35 @@ void Dictionary::computeSubwords(
   }
 }
 
+void Dictionary::computeSubwords(
+    const std::string& word,
+    std::vector<std::string>& ngrams,
+    std::vector<std::string>* substrings) const {
+  for (size_t i = 0; i < word.size(); i++) {
+    std::string ngram;
+    if ((word[i] & 0xC0) == 0x80) {
+      continue;
+    }
+    for (size_t j = i, n = 1; j < word.size() && n <= args_->maxn; n++) {
+      ngram.push_back(word[j++]);
+      while (j < word.size() && (word[j] & 0xC0) == 0x80) {
+        ngram.push_back(word[j++]);
+      }
+      if (n >= args_->minn && !(n == 1 && (i == 0 || j == word.size()))) {
+        //std::cout << " {ngram=" << ngram << ",";
+        //int32_t h = hash(ngram) % args_->bucket;
+        //std::cout << h << "} ";
+        //pushHash(ngrams, h);
+        std::cout << ngram << " ";
+        ngrams.push_back(ngram);
+        if (substrings) {
+          substrings->push_back(ngram);
+        }
+      }
+    }
+  }
+}
+
 void Dictionary::initNgrams() {
   for (size_t i = 0; i < size_; i++) {
     std::string word = BOW + words_[i].word + EOW;
@@ -340,6 +370,38 @@ void Dictionary::addSubwords(
   }
 }
 
+void Dictionary::addSubwords(
+  std::vector<std::string>& line,
+  const std::string& token,
+  int32_t wid) const {
+
+  if (wid >= 0) {
+    std::cout << " {out_of_vocab: no} ";
+    line.push_back(token);
+  } else {
+    std::cout << " {out_of_vocab: yes} ";
+  }
+
+// if (wid < 0) { // out of vocab
+// std::cout << " {out_of_vocab: yes} ";
+  if (token != EOS) {
+    std::cout << " { subwords: ";
+    computeSubwords(BOW + token + EOW, line);
+    std::cout << " } ";
+  }
+
+//  } else {
+//    std::cout << " {out_of_vocab: no} ";
+//    if (args_->maxn <= 0) { // in vocab w/o subwords
+//      line.push_back(wid);
+//    } else { // in vocab w/ subwords
+//      const std::vector<int32_t>& ngrams = getSubwords(wid);
+//      std::cout << " {getSubwords: "; for (const auto& i: ngrams) std::cout << i << ", "; std::cout << "} ";
+//      line.insert(line.end(), ngrams.cbegin(), ngrams.cend());
+//    }
+//  }
+}
+
 void Dictionary::reset(std::istream& in) const {
   if (in.eof()) {
     in.clear();
@@ -403,6 +465,40 @@ int32_t Dictionary::getLine(
     }
   }
   addWordNgrams(words, word_hashes, args_->wordNgrams);
+  return ntokens;
+}
+
+int32_t Dictionary::getLine(
+    std::istream& in,
+    std::vector<std::string>& words,
+    std::vector<int32_t>& labels) const {
+  std::vector<int32_t> word_hashes;
+  std::string token;
+  int32_t ntokens = 0;
+
+  reset(in);
+  words.clear();
+  labels.clear();
+  while (readWord(in, token)) {
+    std::cout << "\n- token(" << token;
+    uint32_t h = hash(token);
+    int32_t wid = getId(token, h);
+    std::cout << ", " << wid << ")";
+    entry_type type = wid < 0 ? getType(token) : getType(wid);
+
+    ntokens++;
+    if (type == entry_type::word) {
+        std::cout << " {getLine->addSubwords} ";
+        addSubwords(words, token, wid);
+      word_hashes.push_back(h);
+    } else if (type == entry_type::label && wid >= 0) {
+      labels.push_back(wid - nwords_);
+    }
+    if (token == EOS) {
+      break;
+    }
+  }
+  std::cout << std::endl;
   return ntokens;
 }
 

@@ -1,0 +1,4 @@
+__label__house bed
+__label__house kitchen
+__label__game football
+__label__game basket

@@ -122,6 +122,8 @@ class FastText {
       Predictions& predictions,
       real threshold = 0.0) const;
 
+  void showNGramVectorPairs(std::vector<std::string> ngrams) const;
+
   bool predictLine(
       std::istream& in,
       std::vector<std::pair<real, std::string>>& predictions,

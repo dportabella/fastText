@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <stdexcept>
+#include <iostream>
 
 namespace fasttext {
 
@@ -44,9 +45,11 @@ void Model::computeHidden(const std::vector<int32_t>& input, State& state)
     const {
   Vector& hidden = state.hidden;
   hidden.zero();
+  std::cout << "vector square norms: ";
   for (auto it = input.cbegin(); it != input.cend(); ++it) {
     hidden.addRow(*wi_, *it);
   }
+  std::cout << ";\n";
   hidden.mul(1.0 / input.size());
 }
 

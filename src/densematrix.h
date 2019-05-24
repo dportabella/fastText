@@ -71,5 +71,6 @@ class DenseMatrix : public Matrix {
   void save(std::ostream&) const override;
   void load(std::istream&) override;
   void dump(std::ostream&) const override;
+  Vector getVector(int32_t i) const override ;
 };
 } // namespace fasttext

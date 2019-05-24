@@ -449,18 +449,36 @@ void FastText::predict(
   model_->predict(words, k, threshold, predictions, state);
 }
 
+void FastText::showNGramVectorPairs(std::vector<std::string> ngrams) const {
+  std::cout << "ngrams:" << std::endl;
+  for (const auto& ngram: ngrams) {
+    int32_t hash = dict_->getIdOrHash(ngram);
+    Vector v = model_->wi_->getVector(hash);
+    std::cout << "ngram: " << ngram << "\thash: " << hash << "\tvector square norm: " << v.squareNorm() << "\tvector: ";
+    for (int32_t vi = 0; vi < v.size(); vi++) std::cout << v[vi] << " "; std::cout << "]\n";
+  }
+  std::cout << std::endl;
+}
+
 bool FastText::predictLine(
     std::istream& in,
     std::vector<std::pair<real, std::string>>& predictions,
     int32_t k,
     real threshold) const {
+
+  std::cout << "\n+++ predictLine\n";
   predictions.clear();
   if (in.peek() == EOF) {
     return false;
   }
 
-  std::vector<int32_t> words, labels;
-  dict_->getLine(in, words, labels);
+  std::vector<std::string> wordsStr;
+  std::vector<int32_t> labels;
+  dict_->getLine(in, wordsStr, labels);
+  showNGramVectorPairs(wordsStr);
+  std::vector<int32_t> words;
+  for (const auto& i: wordsStr) words.push_back(dict_->getIdOrHash(i));
+
   Predictions linePredictions;
   predict(k, words, linePredictions, threshold);
   for (const auto& p : linePredictions) {

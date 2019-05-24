@@ -43,6 +43,7 @@ class Dictionary {
   void reset(std::istream&) const;
   void pushHash(std::vector<int32_t>&, int32_t) const;
   void addSubwords(std::vector<int32_t>&, const std::string&, int32_t) const;
+  void addSubwords(std::vector<std::string>&, const std::string&, int32_t) const;
 
   std::shared_ptr<Args> args_;
   std::vector<int32_t> word2int_;
@@ -87,6 +88,10 @@ class Dictionary {
       const std::string&,
       std::vector<int32_t>&,
       std::vector<std::string>* substrings = nullptr) const;
+  void computeSubwords(
+      const std::string&,
+      std::vector<std::string>&,
+      std::vector<std::string>* substrings = nullptr) const;
   uint32_t hash(const std::string& str) const;
   void add(const std::string&);
   bool readWord(std::istream&, std::string&) const;
@@ -97,6 +102,8 @@ class Dictionary {
   std::vector<int64_t> getCounts(entry_type) const;
   int32_t getLine(std::istream&, std::vector<int32_t>&, std::vector<int32_t>&)
       const;
+  int32_t getLine(std::istream&, std::vector<std::string>&, std::vector<int32_t>&)
+      const;
   int32_t getLine(std::istream&, std::vector<int32_t>&, std::minstd_rand&)
       const;
   void threshold(int64_t, int64_t);
@@ -106,6 +113,13 @@ class Dictionary {
   }
   void dump(std::ostream&) const;
   void init();
+
+  // reproduced behaviour from Dictionary::computeSubwords
+  inline int32_t getIdOrHash(std::string ngram) {
+    uint32_t h = hash(ngram);
+    int32_t wid = getId(ngram, (int32_t) h);
+    return (wid < 0) ? (h % args_->bucket + nwords_) : wid;
+  }
 };
 
 } // namespace fasttext
